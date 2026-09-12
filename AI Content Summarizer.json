@@ -1,0 +1,216 @@
+{
+  "name": "AI Content Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Content Summarizer",
+        "formDescription": "Enter text below and AI will summarize it.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Text",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -544,
+        48
+      ],
+      "id": "44d29a7d-fd2c-4d20-a2b9-4ed69d4bbb32",
+      "name": "On form submission",
+      "webhookId": "d7235102-ae66-446e-98ab-bc955ee8263d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "71ac32d9-0ac8-42af-9f77-4bd31256a3cd",
+              "name": "text",
+              "value": "={{$json.Text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -272,
+        48
+      ],
+      "id": "39ca2624-bb6a-4466-8aa2-1fee3adc3e4d",
+      "name": "Prepare Text"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-oss-20b\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a helpful text summarizer. Give a short summary and 3 important key points.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{$json.text}}\"\n    }\n  ],\n  \"temperature\": 0.3\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        32,
+        48
+      ],
+      "id": "42319ae3-b175-4546-8ec3-c9cf3327af0b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LEaes_zP-QIy2TKdm2BTpJx5WvOkukESloAizWRBZss",
+          "mode": "list",
+          "cachedResultName": "n8n_AI_Summerizer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LEaes_zP-QIy2TKdm2BTpJx5WvOkukESloAizWRBZss/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LEaes_zP-QIy2TKdm2BTpJx5WvOkukESloAizWRBZss/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date ": "={{$now}}",
+            "Input Text": "={{$node[\"Prepare Text\"].json[\"text\"]}}",
+            "AI Summary": "={{$json.choices[0].message.content}}",
+            "Status": "Success"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date ",
+              "displayName": "Date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Input Text",
+              "displayName": "Input Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        48
+      ],
+      "id": "2ae6ad6c-f008-4109-9f21-a7164bb757a1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eF9Ozl7IiRN6J0Nh",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Prepare Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Text": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "842fdc68-263e-47c5-8e21-4847d734236c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "539449321207ea1cf59cb55db840d47a263992911dc0de85e77eb0ddb2da6a5c"
+  },
+  "nodeGroups": [],
+  "id": "tKFhhpH9trIk1PjC",
+  "tags": []
+}
